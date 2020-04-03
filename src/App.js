@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Button, Row, Col } from "antd";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -9,11 +10,7 @@ import axios from "axios";
 const App = () => {
     const calendarComponentRef = React.createRef();
     const [calendarWeekends, setCalendarWeekends] = useState(true);
-    const [calendarEvents, setCalendarEvents] = useState([
-        { title: "Event Now", start: "2020-04-02", end: new Date() },
-        { title: "Hari raya nyepi", start: "2019-03-07", end: "2019-03-08" },
-        { title: "Event next day", start: "2020-04-04", end: "" }
-    ]);
+    const [calendarEvents, setCalendarEvents] = useState([]);
 
     const getData = async () => {
         await axios
@@ -21,17 +18,17 @@ const App = () => {
                 "https://www.googleapis.com/calendar/v3/calendars/id.indonesian%23holiday%40group.v.calendar.google.com/events?key=AIzaSyA5epbs8RfEj26qM2ixMwcMtMeJIReAFKg"
             )
             .then(res => {
-                 const { data } = res;
-                 const callendarData = data.items.map(item => {
-                     return {
-                         title: item.summary,
-                         start: get(item, "start.date", ""),
-                         end: get(item, "end.date", "")
-                     };
-                 });
+                const { data } = res;
+                const callendarData = data.items.map(item => {
+                    return {
+                        title: item.summary,
+                        start: get(item, "start.date", ""),
+                        end: get(item, "end.date", "")
+                    };
+                });
 
-                 // Lel
-                 setCalendarEvents(callendarData);
+                // Lel
+                setCalendarEvents(callendarData);
             });
     };
     useEffect(() => {
@@ -59,24 +56,38 @@ const App = () => {
 
     return (
         <div className="demo-app">
-            <div className="demo-app-top">
-                <button onClick={toggleWeekends}>toggle weekends</button>
-                &nbsp; &nbsp; (also, click a date/time to add an event)
-            </div>
             <div className="demo-app-calendar">
-                <FullCalendar
-                    defaultView="dayGridMonth"
-                    header={{
-                        left: "prev,next today",
-                        center: "title",
-                        right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
-                    }}
-                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                    ref={calendarComponentRef}
-                    weekends={calendarWeekends}
-                    events={calendarEvents}
-                    dateClick={handleDateClick}
-                />
+                <Row style={{ paddingTop: "50px", paddingBottom: "50px" }}>
+                    <Col>
+                        <div className="demo-app-top">
+                            <Button onClick={toggleWeekends}>
+                                toggle weekends
+                            </Button>
+                            &nbsp; &nbsp; (also, click a date/time to add an
+                            event)
+                        </div>
+                    </Col>
+                    <Col md="24">
+                        <FullCalendar
+                            defaultView="dayGridMonth"
+                            header={{
+                                left: "prev,next today",
+                                center: "title",
+                                right:
+                                    "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+                            }}
+                            plugins={[
+                                dayGridPlugin,
+                                timeGridPlugin,
+                                interactionPlugin
+                            ]}
+                            ref={calendarComponentRef}
+                            weekends={calendarWeekends}
+                            events={calendarEvents}
+                            dateClick={handleDateClick}
+                        />
+                    </Col>
+                </Row>
             </div>
         </div>
     );
