@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Button, Row, Col } from "antd";
+import { Button, Row, Col, Modal } from "antd";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
+import allLocales from "@fullcalendar/core/locales-all";
 import get from "lodash/get";
 import axios from "axios";
+import moment from "moment";
+import "moment/locale/id";
 
 const App = () => {
     const calendarComponentRef = React.createRef();
     const [calendarWeekends, setCalendarWeekends] = useState(true);
+    const [openModal, setOpenModal] = useState(false);
     const [calendarEvents, setCalendarEvents] = useState([]);
-
+    const [eventDetail, setEventDetail] = useState({});
     const getData = async () => {
         await axios
             .get(
@@ -23,7 +27,9 @@ const App = () => {
                     return {
                         title: item.summary,
                         start: get(item, "start.date", ""),
-                        end: get(item, "end.date", "")
+                        end: get(item, "end.date", ""),
+                        backgroundColor: "#ff0000",
+                        borderColor: "#ff0000"
                     };
                 });
 
@@ -41,18 +47,17 @@ const App = () => {
     };
 
     const handleDateClick = arg => {
-        if (alert("Would you like to add an event to " + arg.dateStr + " ?")) {
-            this.setState({
-                // add new event data
-                calendarEvents: calendarEvents.concat({
-                    // creates a new array
-                    title: "New Event",
-                    start: arg.date,
-                    allDay: arg.allDay
-                })
-            });
-        }
+        setOpenModal(true);
+        setEventDetail({
+            title: arg.event.title,
+            start: moment(arg.event.start).format("LLLL"),
+            end: moment(arg.event.end).format("LLLL")
+        });
+        
     };
+
+    const handleOk = () => setOpenModal(false);
+    const handleCancel = () => setOpenModal(false);
 
     return (
         <div className="demo-app">
@@ -67,7 +72,7 @@ const App = () => {
                             event)
                         </div>
                     </Col>
-                    <Col md="24">
+                    <Col>
                         <FullCalendar
                             defaultView="dayGridMonth"
                             header={{
@@ -84,11 +89,24 @@ const App = () => {
                             ref={calendarComponentRef}
                             weekends={calendarWeekends}
                             events={calendarEvents}
-                            dateClick={handleDateClick}
+                            eventClick={handleDateClick}
+                            locales={allLocales}
+                            locale={"id"}
                         />
                     </Col>
                 </Row>
+                <Modal
+                    title="Basic Modal"
+                    visible={openModal}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                >
+                    <p>Event : {eventDetail.title}</p>
+                    <p>Tanggal Mulai : {eventDetail.start}</p>
+                    <p>Tanggal Berakhir : {eventDetail.end}</p>
+                </Modal>
             </div>
+            {console.log(typeof eventDetail.start)}
         </div>
     );
 };
