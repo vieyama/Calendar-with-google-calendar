@@ -1,71 +1,85 @@
-import React from 'react';
-import { Form, Select, InputNumber, DatePicker, Switch, Slider, Button } from 'antd';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
+import get from "lodash/get";
+import axios from "axios";
 
-const { Option } = Select;
+const App = () => {
+    const calendarComponentRef = React.createRef();
+    const [calendarWeekends, setCalendarWeekends] = useState(true);
+    const [calendarEvents, setCalendarEvents] = useState([
+        { title: "Event Now", start: "2020-04-02", end: new Date() },
+        { title: "Hari raya nyepi", start: "2019-03-07", end: "2019-03-08" },
+        { title: "Event next day", start: "2020-04-04", end: "" }
+    ]);
 
-const App = () => (
-  <>
-    <section style={{textAlign: 'center'}}>
-      <h1 style={{textAlign: 'center'}}>Ant Design</h1>
-      <img style={{width: '40px', height: '40px'}} src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"/>
-    </section>
-    <Form style={{ marginTop: 32 }}>
-      <Form.Item
-        label="数字输入框"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 8 }}
-      >
-        <InputNumber min={1} max={10} defaultValue={3} />
-        <span className="ant-form-text"> 台机器</span>
-        <a href="https://ant.design">链接文字</a>
-      </Form.Item>
-      <Form.Item
-        label="开关"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 8 }}
-      >
-        <Switch defaultChecked />
-      </Form.Item>
-      <Form.Item
-        label="滑动输入条"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 8 }}
-      >
-        <Slider defaultValue={70} />
-      </Form.Item>
-      <Form.Item
-        label="选择器"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 8 }}
-      >
-        <Select defaultValue="lucy" style={{ width: 192 }}>
-          <Option value="jack">jack</Option>
-          <Option value="lucy">lucy</Option>
-          <Option value="disabled" disabled>disabled</Option>
-          <Option value="yiminghe">yiminghe</Option>
-        </Select>
-      </Form.Item>
-      <Form.Item
-        label="日期选择框"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 8 }}
-      >
-        <DatePicker />
-      </Form.Item>
-      <Form.Item>
-        
-      </Form.Item>
-      <Form.Item wrapperCol={{ span: 8, offset: 8 }}>
-        <Button type="primary" htmlType="submit">
-          确定
-        </Button>
-        <Button style={{ marginLeft: 8 }}>
-          取消
-        </Button>
-      </Form.Item>
-    </Form>
-  </>
-);
+    const getData = async () => {
+        await axios
+            .get(
+                "https://www.googleapis.com/calendar/v3/calendars/id.indonesian%23holiday%40group.v.calendar.google.com/events?key=AIzaSyA5epbs8RfEj26qM2ixMwcMtMeJIReAFKg"
+            )
+            .then(res => {
+                 const { data } = res;
+                 const callendarData = data.items.map(item => {
+                     return {
+                         title: item.summary,
+                         start: get(item, "start.date", ""),
+                         end: get(item, "end.date", "")
+                     };
+                 });
+
+                 // Lel
+                 setCalendarEvents(callendarData);
+            });
+    };
+    useEffect(() => {
+        getData();
+    }, []);
+    // console.log(calendarEvents);
+
+    const toggleWeekends = () => {
+        setCalendarWeekends(!calendarWeekends);
+    };
+
+    const handleDateClick = arg => {
+        if (alert("Would you like to add an event to " + arg.dateStr + " ?")) {
+            this.setState({
+                // add new event data
+                calendarEvents: calendarEvents.concat({
+                    // creates a new array
+                    title: "New Event",
+                    start: arg.date,
+                    allDay: arg.allDay
+                })
+            });
+        }
+    };
+
+    return (
+        <div className="demo-app">
+            <div className="demo-app-top">
+                <button onClick={toggleWeekends}>toggle weekends</button>
+                &nbsp; &nbsp; (also, click a date/time to add an event)
+            </div>
+            <div className="demo-app-calendar">
+                <FullCalendar
+                    defaultView="dayGridMonth"
+                    header={{
+                        left: "prev,next today",
+                        center: "title",
+                        right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+                    }}
+                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                    ref={calendarComponentRef}
+                    weekends={calendarWeekends}
+                    events={calendarEvents}
+                    dateClick={handleDateClick}
+                />
+            </div>
+        </div>
+    );
+};
 
 export default App;
