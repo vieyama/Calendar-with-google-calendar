@@ -12,7 +12,7 @@
         "@fullcalendar/react": "^4.4.0",
         "@fullcalendar/timegrid": "^4.4.0",
         "antd": "^3.26.11",
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "babel-plugin-import": "^1.13.0",
         "customize-cra": "^0.9.1",
         "i18next": "^19.1.0",
